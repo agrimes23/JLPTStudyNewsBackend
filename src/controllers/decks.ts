@@ -1,30 +1,47 @@
 import express from 'express'
 import { createDeck, getAllDecksByUserId, getDeckData,  updateDeckInfo, deleteDeck, addNewFlashcardsToDeck, removeFlashcardFromDeck, updateFlashcardInDeck } from "../models/flashcardDecks";
+import { UserModel } from '../models/users';
+
 
 // ✅ it works
 export const createDeckController = async (req: express.Request, res: express.Response) => {
     try {
-        const { userId } = req.body; // Extract userId from the request body
-        const deckInfo = req.body.deckInfo; // Assuming deckInfo is present in the request body
+        const { userId } = req.params; 
+        const deckInfo = req.body;
 
         const createdDeck = await createDeck(userId, deckInfo);
 
-        res.status(201).json(createdDeck);
+        console.log("deck info: " + JSON.stringify(deckInfo))
+        // Find the user by userId and update the decks array
+        const updatedUser = await UserModel.findOneAndUpdate(
+            { _id: userId },
+            { $push: { decks: createdDeck._id } },
+            { new: true }
+        );
+
+        console.log('updated user: ' + JSON.stringify(updatedUser))
+
+        if (!updatedUser) {
+            // If user not found, return 404
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Return the updated user document with the new deck added
+        res.status(201).json(updatedUser);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-
 // ✅ it works
 export const getAllDecksByUserController = async (req: express.Request, res: express.Response) => {
     try {
-        const { userId } = req.body; // Extract userId from the request body
-
+        const { userId } = req.params; // Extract userId from the request body
+        console.log("oooooo")
         // Call the model function to fetch all decks associated with the user
         const decks = await getAllDecksByUserId(userId);
-
+        console.log("decks: " + JSON.stringify(decks))
         res.status(200).json(decks);
     } catch (error) {
         console.error(error);

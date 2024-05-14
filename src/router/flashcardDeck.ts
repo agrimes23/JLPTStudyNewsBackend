@@ -4,12 +4,12 @@ import { createDeckController, getAllDecksByUserController, getDeckDataControlle
 import { requireAuth } from '../middleware';
 
 export default (router: express.Router) => {
-    router.post('/deck', requireAuth, createDeckController);
-    router.get('/deck/user', requireAuth, getAllDecksByUserController);
-    router.get('/deck/:deckId', requireAuth, getDeckDataController);
-    router.put('/deck/:deckId', requireAuth, updateDeckInfoController);
-    router.delete('/deck/:deckId', requireAuth, deleteDeckController);
-    router.post('/deck/:deckId/flashcards', requireAuth,  addNewFlashcardsToDeckController);
-    router.delete('/deck/:deckId/flashcards/:flashcardId', requireAuth, removeFlashcardFromDeckController);
-    router.put('/deck/:deckId/flashcards/:flashcardId', requireAuth, updateFlashcardInDeckController);
+    router.post('/deck/:userId', createDeckController);
+    router.get('/deck/user/:userId', requireAuth, getAllDecksByUserController);
+    router.get('/deck/:deckId', getDeckDataController);
+    router.put('/deck/:deckId', updateDeckInfoController);
+    router.delete('/deck/:deckId', deleteDeckController);
+    router.post('/deck/:deckId/flashcards',  addNewFlashcardsToDeckController);
+    router.delete('/deck/:deckId/flashcards/:flashcardId', removeFlashcardFromDeckController);
+    router.put('/deck/:deckId/flashcards/:flashcardId', updateFlashcardInDeckController);
 }

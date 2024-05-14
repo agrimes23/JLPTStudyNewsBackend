@@ -1,6 +1,6 @@
 import express from 'express'
 require('dotenv').config();
-import { createUser, getUserByEmail } from '../models/users'
+import { UserModel, createUser, getUserByEmail } from '../models/users'
 import { authentication, random } from '../helpers'
 import { Types } from 'mongoose'
 import jwt from 'jsonwebtoken'
@@ -8,11 +8,21 @@ import bcrypt from 'bcrypt'
 
 const maxAge = 3 * 24 * 60 * 60;  
 
-const createToken = (id: Types.ObjectId) => {
+const createAccessToken = (id: Types.ObjectId) => {
     console.log("hitting create token")
-    return jwt.sign({ id }, process.env.TOKEN_SECRET, {
-        expiresIn: maxAge
+    
+    return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '10s'
     })
+}
+
+const createRefreshToken = (id: Types.ObjectId) => {
+
+    return jwt.sign(
+        { id }, 
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: '1d'}
+    )
 }
 
 const handleErrors = (err: any) => {
@@ -49,31 +59,67 @@ const handleErrors = (err: any) => {
 
 }
 
-export const login = async (req: express.Request, res: express.Response) => {
+export const refresh = (req: express.Request, res: express.Response) => {
+    const cookies = req.cookies
+    if (!cookies?.jwtToken) return res.status(401).json({  message: 'Unauthorized' })
 
+    const refreshToken = cookies.jwt 
+
+    jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+        async (err: any, decoded: any) => {
+            if (err) return res.status(403).json({ message: 'Forbidden'})
+
+            const foundUser = await UserModel.findOne({ userId: decoded.id}).exec()
+
+            if (!foundUser) return res.status(401).json({ message: "Unauthorized" })
+
+            const accessToken = jwt.sign(
+                { "id": foundUser._id },
+                process.env.ACCESS_TOKEN_SECRET,
+                { expiresIn: '15m'}
+            )
+
+            res.json({ accessToken })
+        }
+    )
+}
+
+
+export const login = async (req: express.Request, res: express.Response) => {
     try {
         const { email, password } = req.body
 
         if (!email || !password) {
-            return res.sendStatus(400)
+            return res.status(400).json({ message: "All fields are required"})
         }
 
         const user = await getUserByEmail(email)
-        console.log("user: " + JSON.stringify(user))
+
         if (!user) {
-            return res.sendStatus(400)
+            return res.status(401).json({ message: "Unauthorized"})
         }
 
         const auth = await bcrypt.compare(password, user.password)
         if (!auth) {
-            throw Error('incorrect password')
+            return res.status(401).json({ message: "Unauthorized"})
         }
-        const token = createToken(user._id)
-        res.cookie('jwtToken', token, { httpOnly: true, maxAge: maxAge + 1000 })
-        res.status(200).json({ user: user._id})
+
+        const accessToken = createAccessToken(user._id);
+        const refreshToken = createRefreshToken(user._id);
+        res.cookie("jwtToken", refreshToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none',
+          maxAge: maxAge * 1000,
+        });
+        
+        res.json({ accessToken })
         
         
     } catch (error) {
+        console.log("bloop oop")
         const err = handleErrors(error)
         console.log(err)
         return res.status(400).json({ err })
@@ -104,7 +150,7 @@ export const register = async (req: express.Request, res: express.Response) => {
             password
         })
 
-        const token = createToken(user._id)
+        const token = createAccessToken(user._id)
         res.cookie('jwtToken', token, { httpOnly: true, maxAge: maxAge * 1000 })
         res.status(201).json({user: user._id})
 
@@ -117,5 +163,9 @@ export const register = async (req: express.Request, res: express.Response) => {
 
 // do I need to do more to this??
 export const logout = (req: express.Request, res: express.Response) => {
-    res.cookie('jwt', '', { maxAge: 1 })
+    
+    const cookies = req.cookies
+    if(!cookies?.jwt) return res.sendStatus(204)
+    res.clearCookie('jwtToken', { httpOnly: true, sameSite: 'none', secure: true })
+    res.json({ message: 'Cookie Cleared'})
 }

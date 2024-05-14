@@ -33,9 +33,9 @@ export const requireAuth = (req: express.Request, res: express.Response, next: e
 
     // check json web token exists and is verified
     if (token) {
-        jwt.verify(token, process.env.TOKEN_SECRET, (err: jwt.VerifyErrors | null, decodedToken: any | undefined) => {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err: jwt.VerifyErrors | null, decodedToken: any | undefined) => {
             if (err) {
-                res.redirect('/login')
+                console.log('redirecting to login')
             } else {
                 console.log("decoded token: " + JSON.stringify(decodedToken))
                 next();
@@ -43,7 +43,7 @@ export const requireAuth = (req: express.Request, res: express.Response, next: e
     })
         
     } else {
-        res.redirect('/login')
+        console.log('redirecting to login')
     }
 }
 
@@ -53,7 +53,7 @@ export const isOwner = async (req: express.Request, res: express.Response, next:
         const token = req.cookies.jwt;
 
         if (token) {
-            jwt.verify(token, process.env.TOKEN_SECRET, (err: jwt.VerifyErrors | null, decodedToken: any | undefined) => {
+            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err: jwt.VerifyErrors | null, decodedToken: any | undefined) => {
                 if (err) {
                     console.log(err.message)
                     res.locals.user = null
