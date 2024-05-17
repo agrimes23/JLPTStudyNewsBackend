@@ -7,13 +7,12 @@ import { getUserById } from '../models/users'
 
 // TODO: need to work on this interface for requireAuth
 interface DecodedToken {
-    // Define the structure of decoded token properties here
-    // For example:
-    userId: string;
-    username: string;
-    // Add more properties as needed
+    id: string;
 }
 
+interface CustomRequest extends Request {
+    _id?: string;
+}
 
 export const hashPassword = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.log("hitting thsi middleware")
@@ -28,77 +27,23 @@ export const hashPassword = async (req: express.Request, res: express.Response, 
   };
 
 
-export const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const token = req.cookies.jwt;
+export const verifyJWT = (req: express.Request, res: express.Response, next: NextFunction) => {
 
-    // check json web token exists and is verified
-    if (token) {
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err: jwt.VerifyErrors | null, decodedToken: any | undefined) => {
-            if (err) {
-                console.log('redirecting to login')
-            } else {
-                console.log("decoded token: " + JSON.stringify(decodedToken))
-                next();
-            }
-    })
-        
-    } else {
-        console.log('redirecting to login')
+    const authHeader = req.headers.authorization || req.headers.Authorization
+    
+    if (typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Unauthorized' });
     }
-}
 
-export const isOwner = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    try {
+    const token = authHeader.split(' ')[1]
 
-        const token = req.cookies.jwt;
-
-        if (token) {
-            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err: jwt.VerifyErrors | null, decodedToken: any | undefined) => {
-                if (err) {
-                    console.log(err.message)
-                    res.locals.user = null
-                    next();
-                } else {
-                    console.log("decoded token: " + JSON.stringify(decodedToken))
-                    let user = getUserById(decodedToken.id)
-                    // TODO: Does this work?? Please check
-                    res.locals.user = user
-                    next();
-                }
-            })
-
-        } else {
-            res.locals.user = null
-            next();
+    jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET,
+        (err, decoded: DecodedToken) => {
+            if (err) return res.status(403).json({ message: 'Forbidden' })
+            req.body._id = decoded.id
+            next()
         }
-
-    } catch (error){ 
-        console.log(error)
-        return res.sendStatus(400)
-    }
+    )
 }
-
-// FIXME: need to update this isAuthenticate route
-
-// export const isAuthenticated = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-//     try {
-//         const sessionToken = req.cookies["JLPT-STUDY-NEWS"]
-        
-//         if(!sessionToken){
-//             return res.sendStatus(403)
-//         }
-
-//         const existingUser = await getUserBySessionToken(sessionToken)
-
-//         if(!existingUser){
-//             return res.sendStatus(403)
-//         }
-
-//         merge(req, { identity: existingUser })
-
-//         return next();
-//     } catch (error) {
-//         console.log(error)
-//         return res.sendStatus(400)
-//     }
-// }

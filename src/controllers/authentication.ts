@@ -1,7 +1,6 @@
 import express from 'express'
 require('dotenv').config();
 import { UserModel, createUser, getUserByEmail } from '../models/users'
-import { authentication, random } from '../helpers'
 import { Types } from 'mongoose'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
@@ -12,7 +11,7 @@ const createAccessToken = (id: Types.ObjectId) => {
     console.log("hitting create token")
     
     return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '10s'
+        expiresIn: '5m'
     })
 }
 
@@ -63,22 +62,22 @@ export const refresh = (req: express.Request, res: express.Response) => {
     const cookies = req.cookies
     if (!cookies?.jwtToken) return res.status(401).json({  message: 'Unauthorized' })
 
-    const refreshToken = cookies.jwt 
-
+    const refreshToken = cookies.jwtToken 
+    console.log("refresh token : " + JSON.stringify(refreshToken))
     jwt.verify(
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
         async (err: any, decoded: any) => {
-            if (err) return res.status(403).json({ message: 'Forbidden'})
-
-            const foundUser = await UserModel.findOne({ userId: decoded.id}).exec()
-
+            if (err) return res.status(403).json({ message: `Forbidden: ${err}`})
+            console.log("decoded id: " + JSON.stringify(decoded.id))
+            const foundUser = await UserModel.findOne({ _id: decoded.id}).exec()
+            console.log("found user: " + JSON.stringify(foundUser))
             if (!foundUser) return res.status(401).json({ message: "Unauthorized" })
 
             const accessToken = jwt.sign(
                 { "id": foundUser._id },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: '15m'}
+                { expiresIn: '5m'}
             )
 
             res.json({ accessToken })
@@ -109,8 +108,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         const accessToken = createAccessToken(user._id);
         const refreshToken = createRefreshToken(user._id);
         res.cookie("jwtToken", refreshToken, {
-          httpOnly: true,
-          secure: true,
+          path: '/',
           sameSite: 'none',
           maxAge: maxAge * 1000,
         });
@@ -151,7 +149,7 @@ export const register = async (req: express.Request, res: express.Response) => {
         })
 
         const token = createAccessToken(user._id)
-        res.cookie('jwtToken', token, { httpOnly: true, maxAge: maxAge * 1000 })
+        res.cookie('jwtToken', token, { maxAge: maxAge * 1000 })
         res.status(201).json({user: user._id})
 
     } catch (error) {
@@ -165,7 +163,7 @@ export const register = async (req: express.Request, res: express.Response) => {
 export const logout = (req: express.Request, res: express.Response) => {
     
     const cookies = req.cookies
-    if(!cookies?.jwt) return res.sendStatus(204)
-    res.clearCookie('jwtToken', { httpOnly: true, sameSite: 'none', secure: true })
+    if(!cookies?.jwtToken) return res.sendStatus(204)
+    res.clearCookie('jwtToken', { sameSite: 'none' })
     res.json({ message: 'Cookie Cleared'})
 }
