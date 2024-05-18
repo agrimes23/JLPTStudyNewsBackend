@@ -28,7 +28,7 @@ export const hashPassword = async (req: express.Request, res: express.Response, 
 
 
 export const verifyJWT = (req: express.Request, res: express.Response, next: NextFunction) => {
-
+    console.log("checking...")
     const authHeader = req.headers.authorization || req.headers.Authorization
     
     if (typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {

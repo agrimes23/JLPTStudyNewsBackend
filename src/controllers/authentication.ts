@@ -11,7 +11,7 @@ const createAccessToken = (id: Types.ObjectId) => {
     console.log("hitting create token")
     
     return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '5m'
+        expiresIn: '10m'
     })
 }
 
@@ -106,6 +106,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         }
 
         const accessToken = createAccessToken(user._id);
+        console.log("accessToken in backend: " + JSON.stringify(accessToken))
         const refreshToken = createRefreshToken(user._id);
         res.cookie("jwtToken", refreshToken, {
           path: '/',
@@ -113,8 +114,17 @@ export const login = async (req: express.Request, res: express.Response) => {
           maxAge: maxAge * 1000,
         });
         
-        res.json({ accessToken })
-        
+        res.json({
+            message: "User logged in successfully",
+            success: true,
+            user: {
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+            },
+            accessToken,
+          });
         
     } catch (error) {
         console.log("bloop oop")
