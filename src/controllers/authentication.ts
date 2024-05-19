@@ -127,7 +127,6 @@ export const login = async (req: express.Request, res: express.Response) => {
               decks: user.decks
             },
             accessToken: accessToken,
-            refreshToken: refreshToken
           });
         
     } catch (error) {
@@ -171,7 +170,7 @@ export const register = async (req: express.Request, res: express.Response) => {
             maxAge: maxAge * 1000,
           });
 
-        res.status(201).json({user: user._id, refreshToken: token})
+        res.status(201).json({user: user._id })
 
     } catch (error) {
         const err = handleErrors(error)
