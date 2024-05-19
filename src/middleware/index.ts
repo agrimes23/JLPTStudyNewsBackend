@@ -15,11 +15,9 @@ interface CustomRequest extends Request {
 }
 
 export const hashPassword = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.log("hitting thsi middleware")
     try {
       const salt = await bcrypt.genSalt();
       req.body.password = await bcrypt.hash(req.body.password, salt);
-      console.log("does this work?")
       next();
     } catch (error) {
       res.status(500).json({ error: 'Internal Server Error' });

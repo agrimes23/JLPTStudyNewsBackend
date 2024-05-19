@@ -25,7 +25,7 @@ const createRefreshToken = (id: Types.ObjectId) => {
 }
 
 const handleErrors = (err: any) => {
-    console.log(err.message, err.code)
+    console.error(err.message, err.code)
 
     let errors = { email: '', password: '' }
 
@@ -62,8 +62,7 @@ export const refresh = (req: express.Request, res: express.Response) => {
     const cookies = req.cookies
     if (!cookies?.jwtToken) return res.status(401).json({  message: 'Unauthorized' })
 
-    const refreshToken = cookies.jwtToken 
-    console.log("refresh token : " + JSON.stringify(refreshToken))
+    const refreshToken = cookies.jwtToken
     jwt.verify(
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
@@ -106,11 +105,14 @@ export const login = async (req: express.Request, res: express.Response) => {
         }
 
         const accessToken = createAccessToken(user._id);
-        console.log("accessToken in backend: " + JSON.stringify(accessToken))
+
         const refreshToken = createRefreshToken(user._id);
         res.cookie("jwtToken", refreshToken, {
-          path: '/',
-          sameSite: 'none',
+          httpOnly: true,
+          domain: 'localhost',
+          secure: false,
+          sameSite: 'lax',
+          path: "/",
           maxAge: maxAge * 1000,
         });
         
@@ -122,12 +124,13 @@ export const login = async (req: express.Request, res: express.Response) => {
               email: user.email,
               firstName: user.firstName,
               lastName: user.lastName,
+              decks: user.decks
             },
-            accessToken,
+            accessToken: accessToken,
+            refreshToken: refreshToken
           });
         
     } catch (error) {
-        console.log("bloop oop")
         const err = handleErrors(error)
         console.log(err)
         return res.status(400).json({ err })
@@ -137,7 +140,6 @@ export const login = async (req: express.Request, res: express.Response) => {
 
 export const register = async (req: express.Request, res: express.Response) => {
 
-    console.log("Oh hi there")
     try{
         const { firstName, lastName, email, password } = req.body
 
@@ -159,8 +161,17 @@ export const register = async (req: express.Request, res: express.Response) => {
         })
 
         const token = createAccessToken(user._id)
-        res.cookie('jwtToken', token, { maxAge: maxAge * 1000 })
-        res.status(201).json({user: user._id})
+
+        res.cookie("jwtToken", token, {
+            httpOnly: true,
+            secure: false,
+            domain: 'localhost',
+            sameSite: 'lax',
+            path: "/",
+            maxAge: maxAge * 1000,
+          });
+
+        res.status(201).json({user: user._id, refreshToken: token})
 
     } catch (error) {
         const err = handleErrors(error)

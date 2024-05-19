@@ -8,8 +8,8 @@ import { verifyJWT } from '../middleware';
 
 export default (router: express.Router) => {
     router.post('/deck/:userId', createDeckController);
-    router.get('/deck/user/:userId', verifyJWT, getAllDecksByUserController);
-    router.get('/deck/:deckId', verifyJWT, getDeckDataController);
+    router.get('/deck/user/:userId', getAllDecksByUserController);
+    router.get('/deck/:deckId', getDeckDataController);
     router.put('/deck/:deckId', updateDeckInfoController);
     router.delete('/deck/:deckId', deleteDeckController);
     router.post('/deck/:deckId/flashcards',  addNewFlashcardsToDeckController);

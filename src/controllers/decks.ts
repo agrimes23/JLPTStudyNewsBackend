@@ -38,7 +38,7 @@ export const createDeckController = async (req: express.Request, res: express.Re
 export const getAllDecksByUserController = async (req: express.Request, res: express.Response) => {
     try {
         const { userId } = req.params; // Extract userId from the request body
-        console.log("oooooo")
+
         // Call the model function to fetch all decks associated with the user
         const decks = await getAllDecksByUserId(userId);
         console.log("decks: " + JSON.stringify(decks))
