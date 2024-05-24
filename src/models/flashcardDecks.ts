@@ -62,7 +62,13 @@ export const getAllDecksByUserId = async (userId: string) => {
 
 // this will get deck info as well as the flashcards for the deck
 export const getDeckData = async (deckId: string) => {
-    return await FlashcardDeck.findById(deckId).populate('flashcards');
+  try {
+    const deck = await FlashcardDeck.findById(deckId).populate('flashcards');
+    return deck;
+  } catch (error) {
+    console.error("Error fetching deck data:", error);
+    throw error; // Rethrow the error to handle it in the component or context
+  }
 };
 
 export const updateDeckInfo = async (deckId: string, updatedInfo: any) => {
