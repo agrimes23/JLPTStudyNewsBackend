@@ -94,19 +94,28 @@ export const deleteDeckController = async (req: express.Request, res: express.Re
 };
 
 // ✅ it works
-export const addNewFlashcardsToDeckController = async (req: express.Request, res: express.Response) => {
+export const addNewFlashcardsToDeckController = async (req:express.Request, res: express.Response) => {
     try {
-        const { deckId } = req.params; // Assuming deckId is present in the request parameters
-        const { flashcards } = req.body; // Assuming flashcards is present in the request body
-
-        const updatedDeck = await addNewFlashcardsToDeck(deckId, flashcards);
-
-        res.status(200).json(updatedDeck);
+      const { deckId } = req.params;
+      const { flashcards } = req.body;
+  
+      if (!flashcards || !Array.isArray(flashcards)) {
+        return res.status(400).json({ message: 'Invalid request body. Expected an array of flashcards.' });
+      }
+  
+      // Log only the necessary parts of req and res
+      console.log("Received request to add flashcards to deckId:", deckId);
+      console.log("Request body:", flashcards);
+  
+      const updatedDeck = await addNewFlashcardsToDeck(deckId, flashcards);
+      console.log("Updated deck:", updatedDeck);
+  
+      res.status(200).json(updatedDeck);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
-};
+  };
 
 // ✅ it works
 export const removeFlashcardFromDeckController = async (req: express.Request, res: express.Response) => {
