@@ -1,7 +1,7 @@
 import express from 'express'
 import { createDeck, getAllDecksByUserId, getDeckData,  updateDeckInfo, deleteDeck, addNewFlashcardsToDeck, removeFlashcardFromDeck, updateFlashcardInDeck } from "../models/flashcardDecks";
 import { UserModel } from '../models/users';
-
+import { FlashcardDeck } from "../models/flashcardDecks"
 
 // ✅ it works
 export const createDeckController = async (req: express.Request, res: express.Response) => {
@@ -27,7 +27,7 @@ export const createDeckController = async (req: express.Request, res: express.Re
         }
 
         // Return the updated user document with the new deck added
-        res.status(201).json(updatedUser);
+        res.status(201).json(createdDeck);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -99,6 +99,13 @@ export const addNewFlashcardsToDeckController = async (req:express.Request, res:
       const { deckId } = req.params;
       const { flashcards } = req.body;
   
+      console.log("boop adding new flashcard")
+
+      const deck = await FlashcardDeck.findById(deckId);
+        if (!deck) {
+            return res.status(404).json({ error: 'Deck not found' });
+        }
+
       if (!flashcards || !Array.isArray(flashcards)) {
         return res.status(400).json({ message: 'Invalid request body. Expected an array of flashcards.' });
       }
