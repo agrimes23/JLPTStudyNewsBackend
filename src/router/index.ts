@@ -1,5 +1,5 @@
 import express from "express";
-
+import newsRoutes from "./newsRoutes"
 import authentication from "./authentication";
 import users from "./users";
 import flashcardDeck from "./flashcardDeck";
@@ -12,6 +12,7 @@ export default (): express.Router => {
     users(router)
     flashcardDeck(router)
     jlptKanji(router)
+    newsRoutes(router)
 
     return router
 }
