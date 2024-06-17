@@ -181,9 +181,19 @@ export const register = async (req: express.Request, res: express.Response) => {
 
 // do I need to do more to this??
 export const logout = (req: express.Request, res: express.Response) => {
-    
-    const cookies = req.cookies
-    if(!cookies?.jwtToken) return res.sendStatus(204)
-    res.clearCookie('jwtToken', { sameSite: 'none' })
-    res.json({ message: 'Cookie Cleared'})
-}
+    const cookies = req.cookies;
+  
+    if (!cookies?.jwtToken) {
+      // No cookie found, nothing to clear
+      return res.sendStatus(204); // 204 No Content
+    }
+  
+    // Clear the cookie
+    res.clearCookie('jwtToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+  
+    res.status(200).json({ message: 'Cookie Cleared' });
+  };
