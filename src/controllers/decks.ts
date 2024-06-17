@@ -1,5 +1,5 @@
 import express from 'express'
-import { createDeck, getAllDecksByUserId, getDeckData,  updateDeckInfo, deleteDeck, addNewFlashcardsToDeck, removeFlashcardFromDeck, updateFlashcardInDeck } from "../db/flashcardDecks";
+import { createDeck, getAllDecksByUserId, getDeckData,  updateDeckInfo, deleteDeck, addNewFlashcardsToDeck, removeFlashcardFromDeck, updateFlashcardInDeck } from "../models/flashcardDecks";
 
 // ✅ it works
 export const createDeckController = async (req: express.Request, res: express.Response) => {

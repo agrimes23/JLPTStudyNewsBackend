@@ -1,22 +1,76 @@
 import express, { NextFunction } from 'express'
 import { get, merge } from 'lodash'
+import bcrypt from 'bcrypt'
+import jwt, { decode } from 'jsonwebtoken'
+require('dotenv').config();
+import { getUserById } from '../models/users'
 
-import { getUserBySessionToken } from '../db/users'
+// TODO: need to work on this interface for requireAuth
+interface DecodedToken {
+    // Define the structure of decoded token properties here
+    // For example:
+    userId: string;
+    username: string;
+    // Add more properties as needed
+}
+
+
+export const hashPassword = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.log("hitting thsi middleware")
+    try {
+      const salt = await bcrypt.genSalt();
+      req.body.password = await bcrypt.hash(req.body.password, salt);
+      console.log("does this work?")
+      next();
+    } catch (error) {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+
+
+export const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const token = req.cookies.jwt;
+
+    // check json web token exists and is verified
+    if (token) {
+        jwt.verify(token, process.env.TOKEN_SECRET, (err: jwt.VerifyErrors | null, decodedToken: any | undefined) => {
+            if (err) {
+                res.redirect('/login')
+            } else {
+                console.log("decoded token: " + JSON.stringify(decodedToken))
+                next();
+            }
+    })
+        
+    } else {
+        res.redirect('/login')
+    }
+}
 
 export const isOwner = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-        const { id } = req.params;
-        const currentUserId = get(req, 'identity._id') as String
 
-        if(!currentUserId) {
-            return res.sendStatus(403)
+        const token = req.cookies.jwt;
+
+        if (token) {
+            jwt.verify(token, process.env.TOKEN_SECRET, (err: jwt.VerifyErrors | null, decodedToken: any | undefined) => {
+                if (err) {
+                    console.log(err.message)
+                    res.locals.user = null
+                    next();
+                } else {
+                    console.log("decoded token: " + JSON.stringify(decodedToken))
+                    let user = getUserById(decodedToken.id)
+                    // TODO: Does this work?? Please check
+                    res.locals.user = user
+                    next();
+                }
+            })
+
+        } else {
+            res.locals.user = null
+            next();
         }
-
-        if(currentUserId.toString() !== id){
-            return res.sendStatus(403)
-        }
-
-        next();
 
     } catch (error){ 
         console.log(error)
@@ -24,25 +78,27 @@ export const isOwner = async (req: express.Request, res: express.Response, next:
     }
 }
 
-export const isAuthenticated = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    try {
-        const sessionToken = req.cookies["JLPT-STUDY-NEWS"]
+// FIXME: need to update this isAuthenticate route
+
+// export const isAuthenticated = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+//     try {
+//         const sessionToken = req.cookies["JLPT-STUDY-NEWS"]
         
-        if(!sessionToken){
-            return res.sendStatus(403)
-        }
+//         if(!sessionToken){
+//             return res.sendStatus(403)
+//         }
 
-        const existingUser = await getUserBySessionToken(sessionToken)
+//         const existingUser = await getUserBySessionToken(sessionToken)
 
-        if(!existingUser){
-            return res.sendStatus(403)
-        }
+//         if(!existingUser){
+//             return res.sendStatus(403)
+//         }
 
-        merge(req, { identity: existingUser })
+//         merge(req, { identity: existingUser })
 
-        return next();
-    } catch (error) {
-        console.log(error)
-        return res.sendStatus(400)
-    }
-}
+//         return next();
+//     } catch (error) {
+//         console.log(error)
+//         return res.sendStatus(400)
+//     }
+// }

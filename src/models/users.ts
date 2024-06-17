@@ -1,15 +1,25 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema, model, Document } from 'mongoose'
+import { isEmail } from 'validator'
+import bcrypt from 'bcrypt'
+
 const UserSchema = new mongoose.Schema({
-    firstName: { type: String, required: true},
-    lastName: { type: String },
-    email: { type: String, required: true},
-    authentication: {
-        password: { type: String, required: true, select: false },
-        salt: {type: String, select: false },
-        sessionToken: {type: String, select: false }
-    },
-    decks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserFlashcardDeck' }]
-})
+  firstName: { type: String, required: true },
+  lastName: { type: String },
+  email: {
+    type: String,
+    required: [true, 'Please enter an email'],
+    unique: true,
+    lowercase: true,
+    validate: [isEmail, 'Please enter a valid email']
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: [6, "Minimum password length is 6 characters"],
+  },
+
+  decks: [{ type: mongoose.Schema.Types.ObjectId, ref: "UserFlashcardDeck" }],
+});
 
 export const UserModel = mongoose.model("User", UserSchema)
 
