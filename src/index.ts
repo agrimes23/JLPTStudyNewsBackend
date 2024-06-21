@@ -12,7 +12,7 @@ import router from './router';
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: `${process.env.FRONTEND_URL}`,
     credentials: true,
 }))
 
@@ -23,7 +23,7 @@ app.use(bodyParser.json());
 const server = http.createServer(app)
 
 server.listen(8080, () => {
-    console.log("Server running on http://localhost:8080/")
+    console.log("Server running")
 })
 
 
