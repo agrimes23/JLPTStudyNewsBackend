@@ -28,7 +28,7 @@ server.listen(PORT, () => {
     console.log("Server running");
 });
 const MONGO_URL = process.env.DATABASE_URL;
-mongoose_1.default.Promise = Promise;
+mongoose_1.default.Promise = global.Promise;
 mongoose_1.default.connect(MONGO_URL)
     .then(() => {
     console.log('MongoDB connected');

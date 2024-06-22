@@ -32,7 +32,7 @@ server.listen(PORT, () => {
 
 const MONGO_URL = process.env.DATABASE_URL
 
-mongoose.Promise = Promise;
+mongoose.Promise = global.Promise;
 mongoose.connect(MONGO_URL)
   .then(() => {
     console.log('MongoDB connected');
