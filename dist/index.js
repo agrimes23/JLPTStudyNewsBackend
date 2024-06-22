@@ -15,7 +15,7 @@ const router_1 = __importDefault(require("./router"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8080;
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL,
+    origin: "https://jlpt-news-study.vercel.app",
     methods: 'GET, POST, PUT, DELETE',
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
