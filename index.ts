@@ -13,7 +13,10 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(cors({
-    origin: "https://jlpt-news-study.vercel.app",
+    origin: [
+      'https://jlpt-news-study.vercel.app',
+      'https://jlpt-news-study-1ln272bjf-agrimes23s-projects.vercel.app'
+    ],
     methods: 'GET, POST, PUT, DELETE',
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
