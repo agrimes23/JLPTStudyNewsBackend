@@ -37,5 +37,8 @@ mongoose_1.default.connect(MONGO_URL)
     console.error('MongoDB connection error:', err);
 });
 mongoose_1.default.connection.on("error", (error) => console.log(error));
+app.get('/', (req, res) => {
+    res.send('Backend server is running');
+});
 app.use('/', (0, router_1.default)());
 //# sourceMappingURL=index.js.map
