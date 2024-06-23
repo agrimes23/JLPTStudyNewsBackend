@@ -111,7 +111,7 @@ export const login = async (req: express.Request, res: express.Response) => {
           httpOnly: true,
           domain: process.env.DOMAIN,
           secure: true,
-          sameSite: 'lax',
+          sameSite: 'none',
           path: "/",
           maxAge: maxAge * 1000,
         });
@@ -165,7 +165,7 @@ export const register = async (req: express.Request, res: express.Response) => {
             httpOnly: true,
             secure: true,
             domain: process.env.DOMAIN,
-            sameSite: 'lax',
+            sameSite: 'none',
             path: "/",
             maxAge: maxAge * 1000,
           });
@@ -192,7 +192,7 @@ export const logout = (req: express.Request, res: express.Response) => {
     res.clearCookie('jwtToken', {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax'
+      sameSite: 'none'
     });
   
     res.status(200).json({ message: 'Cookie Cleared' });
