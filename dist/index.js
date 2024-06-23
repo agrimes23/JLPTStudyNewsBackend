@@ -10,7 +10,6 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const compression_1 = __importDefault(require("compression"));
 const cors_1 = __importDefault(require("cors"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const path_1 = __importDefault(require("path"));
 require('dotenv').config();
 const router_1 = __importDefault(require("./router"));
 const app = (0, express_1.default)();
@@ -38,10 +37,8 @@ mongoose_1.default.connect(MONGO_URL)
     console.error('MongoDB connection error:', err);
 });
 mongoose_1.default.connection.on("error", (error) => console.log(error));
-app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'client', 'build')));
-app.use('/', (0, router_1.default)());
-// Catch-all handler to serve the frontend's index.html
-app.get('/*', function (req, res) {
-    res.sendFile(path_1.default.join(__dirname, '..', 'client', 'build', 'index.html'));
+app.get('/', (req, res) => {
+    res.send('Backend server is running');
 });
+app.use('/', (0, router_1.default)());
 //# sourceMappingURL=index.js.map

@@ -5,7 +5,6 @@ import cookieParser from "cookie-parser"
 import compression from "compression"
 import cors from 'cors'
 import mongoose from 'mongoose'
-import path from 'path';
 require('dotenv').config();
 
 import router from './router';
@@ -44,12 +43,8 @@ mongoose.connect(MONGO_URL)
 
 mongoose.connection.on("error", (error: Error) => console.log(error))
 
-app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
-
-app.use('/', router())
-
-// Catch-all handler to serve the frontend's index.html
-app.get('/*', function (req, res) {
-  res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+app.get('/', (req, res) => {
+    res.send('Backend server is running');
 });
 
+app.use('/', router())
