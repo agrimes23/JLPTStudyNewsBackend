@@ -109,8 +109,8 @@ export const login = async (req: express.Request, res: express.Response) => {
         const refreshToken = createRefreshToken(user._id);
         res.cookie("jwtToken", refreshToken, {
           httpOnly: true,
-          domain: 'localhost',
-          secure: false,
+          domain: process.env.DOMAIN,
+          secure: true,
           sameSite: 'lax',
           path: "/",
           maxAge: maxAge * 1000,
@@ -163,8 +163,8 @@ export const register = async (req: express.Request, res: express.Response) => {
 
         res.cookie("jwtToken", token, {
             httpOnly: true,
-            secure: false,
-            domain: 'localhost',
+            secure: true,
+            domain: process.env.DOMAIN,
             sameSite: 'lax',
             path: "/",
             maxAge: maxAge * 1000,
@@ -191,7 +191,7 @@ export const logout = (req: express.Request, res: express.Response) => {
     // Clear the cookie
     res.clearCookie('jwtToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'lax'
     });
   
