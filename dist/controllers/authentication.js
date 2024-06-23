@@ -79,8 +79,8 @@ const login = async (req, res) => {
         const refreshToken = createRefreshToken(user._id);
         res.cookie("jwtToken", refreshToken, {
             httpOnly: true,
-            domain: 'localhost',
-            secure: false,
+            domain: process.env.DOMAIN,
+            secure: true,
             sameSite: 'lax',
             path: "/",
             maxAge: maxAge * 1000,
@@ -124,8 +124,8 @@ const register = async (req, res) => {
         const token = createAccessToken(user._id);
         res.cookie("jwtToken", token, {
             httpOnly: true,
-            secure: false,
-            domain: 'localhost',
+            secure: true,
+            domain: process.env.DOMAIN,
             sameSite: 'lax',
             path: "/",
             maxAge: maxAge * 1000,
@@ -149,7 +149,7 @@ const logout = (req, res) => {
     // Clear the cookie
     res.clearCookie('jwtToken', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'lax'
     });
     res.status(200).json({ message: 'Cookie Cleared' });
