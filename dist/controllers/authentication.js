@@ -150,7 +150,10 @@ const logout = (req, res) => {
     res.clearCookie('jwtToken', {
         httpOnly: true,
         secure: true,
-        sameSite: 'none'
+        domain: process.env.DOMAIN,
+        sameSite: 'none',
+        path: "/",
+        maxAge: maxAge * 1000,
     });
     res.status(200).json({ message: 'Cookie Cleared' });
 };

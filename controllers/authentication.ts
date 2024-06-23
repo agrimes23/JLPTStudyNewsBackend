@@ -190,9 +190,12 @@ export const logout = (req: express.Request, res: express.Response) => {
   
     // Clear the cookie
     res.clearCookie('jwtToken', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none'
+        httpOnly: true,
+        secure: true,
+        domain: process.env.DOMAIN,
+        sameSite: 'none',
+        path: "/",
+        maxAge: maxAge * 1000,
     });
   
     res.status(200).json({ message: 'Cookie Cleared' });
